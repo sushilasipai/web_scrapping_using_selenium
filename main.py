@@ -8,6 +8,7 @@ from urllib.parse import urlparse, parse_qs
 from selenium.common.exceptions import InvalidCookieDomainException
 import requests
 import os
+from numpy.random import randint
 
 other_website=['https://quora.com','https://twitter.com','https://www.reddit.com','https://www.tumblr.com']
 
@@ -90,7 +91,7 @@ def attempt_cookie_login_facebook(url, browser):
     # # Navigate to another website
     driver.get(random.choice(other_website))
 
-   time.sleep(randint(8,15))
+    time.sleep(randint(8,15))
 
     # Browse back to facebook 
     driver.get('https://www.facebook.com')
@@ -114,19 +115,19 @@ def attempt_cookie_login_instagram(url, browser):
                 browser.add_cookie(cookie)
 
     # # Set Cookie and sleep 10s
-  time.sleep(randint(8,15))
+    time.sleep(randint(8,15))
 
     # # Navigate to another website
 
     driver.get(random.choice(other_website))
 
-  time.sleep(randint(8,15))
+    time.sleep(randint(8,15))
 
     # Browse back to facebook 
 
     driver.get('https://www.instagram.com')
 
-  time.sleep(randint(8,15))
+    time.sleep(randint(8,15))
 
     
 def read_jsonl(path):
