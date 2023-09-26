@@ -9,6 +9,8 @@ from selenium.common.exceptions import InvalidCookieDomainException
 import requests
 import os
 
+other_website=['https://quora.com','https://twitter.com','https://www.reddit.com','https://www.tumblr.com']
+
 
 def download_image(url, directory, file_name):
     try:
@@ -77,24 +79,23 @@ def attempt_cookie_login_facebook(url, browser):
             if len(cookie_data) == 2:
                 cookie = {
                     'name': cookie_data[0],
-                    'value': cookie_data[1],
-                
+                    'value': cookie_data[1],               
                 }
                 # print(cookie)
                 browser.add_cookie(cookie)
 
     # # Set Cookie and sleep 10s
-    time.sleep(10)
+    time.sleep(randint(8,15))
 
     # # Navigate to another website
-    driver.get('https://quora.com')
+    driver.get(random.choice(other_website))
 
-    time.sleep(10)
+   time.sleep(randint(8,15))
 
     # Browse back to facebook 
     driver.get('https://www.facebook.com')
 
-    time.sleep(10)
+    time.sleep(randint(8,15))
 
 
 def attempt_cookie_login_instagram(url, browser):
@@ -113,19 +114,19 @@ def attempt_cookie_login_instagram(url, browser):
                 browser.add_cookie(cookie)
 
     # # Set Cookie and sleep 10s
-    time.sleep(10)
+  time.sleep(randint(8,15))
 
     # # Navigate to another website
 
-    driver.get('https://quora.com')
+    driver.get(random.choice(other_website))
 
-    time.sleep(10)
+  time.sleep(randint(8,15))
 
     # Browse back to facebook 
 
     driver.get('https://www.instagram.com')
 
-    time.sleep(10)
+  time.sleep(randint(8,15))
 
     
 def read_jsonl(path):
