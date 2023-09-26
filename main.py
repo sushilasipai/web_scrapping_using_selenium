@@ -10,11 +10,14 @@ import requests
 import os
 
 
-def download_image(url, file_name):
+def download_image(url, directory, file_name):
     try:
         response = requests.get(url)
         if response.status_code == 200:
-            with open(file_name, 'wb') as file:
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+            file_path = os.path.join(directory, file_name)
+            with open(file_path, 'wb') as file:
                 file.write(response.content)
             print(f"Image downloaded: {file_name}")
         else:
@@ -48,10 +51,26 @@ def attempt_facebook_login(input_username, input_password, browser):
             for cookie in browser.get_cookies():
                 cookie_file.write(f"{cookie['name']}={cookie['value']}\n")
 
-# Attempting this will result in facebook disabling the account immediately due to violation of their rules and regulation
+def attempt_instagram_login(user_name, user_pass, browser):
+    browser.get('https://www.instagram.com')
+    time.sleep(5)
+    username = browser.find_element(By.NAME,"username")
+    password = browser.find_element(By.NAME,"password")
+    submit   = driver.find_element(By.CSS_SELECTOR, 'button[type="submit"]')
+    username.send_keys(user_name)
+    password.send_keys(user_pass)
+    submit.click()
+    time.sleep(10)
+
+    with open('instagram_cookies.txt', 'w') as cookie_file:
+        for cookie in browser.get_cookies():
+            cookie_file.write(f"{cookie['name']}={cookie['value']}\n")
+
 
 #To attempt cookie login, you need to attemp facebook login first. It will create a file facebook_cookies.txt which needs to be passed as url in this function.
-def attempt_cookie_login(url, browser):
+def attempt_cookie_login_facebook(url, browser):
+    browser.get('https://www.facebook.com')
+
     with open(url, 'r') as cookie_file:
         for line in cookie_file.readlines():
             cookie_data = line.strip().split('=')
@@ -64,6 +83,51 @@ def attempt_cookie_login(url, browser):
                 # print(cookie)
                 browser.add_cookie(cookie)
 
+    # # Set Cookie and sleep 10s
+    time.sleep(10)
+
+    # # Navigate to another website
+    driver.get('https://quora.com')
+
+    time.sleep(10)
+
+    # Browse back to facebook 
+    driver.get('https://www.facebook.com')
+
+    time.sleep(10)
+
+
+def attempt_cookie_login_instagram(url, browser):
+    browser.get('https://www.instagram.com')
+
+    with open(url, 'r') as cookie_file:
+        for line in cookie_file.readlines():
+            cookie_data = line.strip().split('=')
+            if len(cookie_data) == 2:
+                cookie = {
+                    'name': cookie_data[0],
+                    'value': cookie_data[1],
+
+                }
+                # print(cookie)
+                browser.add_cookie(cookie)
+
+    # # Set Cookie and sleep 10s
+    time.sleep(10)
+
+    # # Navigate to another website
+
+    driver.get('https://quora.com')
+
+    time.sleep(10)
+
+    # Browse back to facebook 
+
+    driver.get('https://www.instagram.com')
+
+    time.sleep(10)
+
+    
 def read_jsonl(path):
     with open(path, "r") as f:
         for line in f:
@@ -87,26 +151,25 @@ def get_file_name_from_imagesrc(image_src):
 
 
 def get_facebook_post_images(driver, url):
-    driver.get('https://www.facebook.com')
-
     for line in read_jsonl(url):
         if(line['type'] == 'photo' or line['type'] == 'link'):
             driver.get(line['postUrl'])
             try:
-                WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//img[contains(@class, "scaledImageFitWidth")]')))
+                elements = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.XPATH, "//div[@class='x10l6tqk x13vifvy']")))
 
-                # Find the image element using XPath
-                image_element = driver.find_element(By.XPATH, '(//img[contains(@class, "scaledImageFitWidth")])[2]')
-                
-                image_src = image_element.get_attribute('src')
+                img_element = elements.find_element(By.TAG_NAME, "img")
 
-                file_name = get_file_name_from_imagesrc(image_src)
-                # Download the file from image source
-                download_image(image_src, file_name )
+                src = img_element.get_attribute("src")
+
+                file_name = get_file_name_from_imagesrc(src)
+                # # Download the file from image source
+                download_image(src, 'facebook', file_name )
+
+                # #wait 5s to navigate between posts
+                # time.sleep(5)
                 
             except Exception as e:
                 print(f'Error: {str(e)}')
-
 
 def get_instagram_post_images(driver, url):
     driver.get('https://www.instagram.com')
@@ -118,7 +181,7 @@ def get_instagram_post_images(driver, url):
         
         try:
             # Use expected_conditions to wait for the element with class "_aagv" to appear
-            elements = wait.until(EC.presence_of_all_elements_located((By.XPATH, "//div[contains(@class, '_aagu') and contains(@class, '_aato') and .//div[contains(@class, '_aagv')]]")))
+            elements = wait.until(EC.presence_of_all_elements_located((By.XPATH, "//div[@class='x1i10hfl']//div[@class='_aagu']//div[@class='_aagv']")))
 
             for element in elements:
                 img_element = element.find_element(By.TAG_NAME, "img")
@@ -127,13 +190,14 @@ def get_instagram_post_images(driver, url):
             
                 if src:
                     file_name = get_file_name_from_imagesrc(src)
-                    download_image(src,file_name)
+                    download_image(src,'instagram',file_name)
             
             # download_all_post_images(img_element)
                 
         except Exception as e:
             print(f'Error: {str(e)}')
     
+
 
 
 # Create a new Selenium WebDriver instance
@@ -145,14 +209,24 @@ driver = webdriver.Chrome(options=chrome_options)
 
 driver.delete_all_cookies()
 
-#function call to download instagram images
-#get_instagram_post_images(driver,"./covid19-vaccine-instagram-examples.jsonl")
-
 #facebook login
-attempt_facebook_login("username","password",driver)
+#attempt_facebook_login("samparking111@gmail.com","Test@1234",driver)
+
+#attempt cookie login
+#attempt_cookie_login_facebook('./facebook_cookies.txt', driver)
 
 #function call to download facebook images
 #get_facebook_post_images(driver,"./covid19-vaccine-facebook-examples.jsonl")
+
+
+#instagram login
+#attempt_instagram_login("sam.park.hehe","Test@1234",driver)
+
+#instragram cookie login
+attempt_cookie_login_instagram('./instagram_cookies.txt',driver)
+
+#function call to download instagram images
+get_instagram_post_images(driver,"./covid19-vaccine-instagram-examples.jsonl")
         
 
 driver.quit()
