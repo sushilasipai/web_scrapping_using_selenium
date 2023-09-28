@@ -8,7 +8,7 @@ from urllib.parse import urlparse, parse_qs
 from selenium.common.exceptions import InvalidCookieDomainException
 import requests
 import os
-from numpy.random import randint
+import random
 
 other_website=['https://quora.com','https://twitter.com','https://www.reddit.com','https://www.tumblr.com']
 
@@ -86,17 +86,17 @@ def attempt_cookie_login_facebook(url, browser):
                 browser.add_cookie(cookie)
 
     # # Set Cookie and sleep 10s
-    time.sleep(randint(8,15))
+    time.sleep(random.randint(8,15))
 
     # # Navigate to another website
     driver.get(random.choice(other_website))
 
-    time.sleep(randint(8,15))
+    time.sleep(random.randint(8,15))
 
     # Browse back to facebook 
     driver.get('https://www.facebook.com')
 
-    time.sleep(randint(8,15))
+    time.sleep(random.randint(8,15))
 
 
 def attempt_cookie_login_instagram(url, browser):
@@ -115,19 +115,19 @@ def attempt_cookie_login_instagram(url, browser):
                 browser.add_cookie(cookie)
 
     # # Set Cookie and sleep 10s
-    time.sleep(randint(8,15))
+    time.sleep(random.randint(8,15))
 
     # # Navigate to another website
 
     driver.get(random.choice(other_website))
 
-    time.sleep(randint(8,15))
+    time.sleep(random.randint(8,15))
 
     # Browse back to facebook 
 
     driver.get('https://www.instagram.com')
 
-    time.sleep(randint(8,15))
+    time.sleep(random.randint(8,15))
 
     
 def read_jsonl(path):
@@ -212,23 +212,23 @@ driver = webdriver.Chrome(options=chrome_options)
 driver.delete_all_cookies()
 
 #facebook login
-#attempt_facebook_login("samparking111@gmail.com","Test@1234",driver)
+#attempt_facebook_login("username","password",driver)
 
 #attempt cookie login
-#attempt_cookie_login_facebook('./facebook_cookies.txt', driver)
+attempt_cookie_login_facebook('./facebook_cookies.txt', driver)
 
 #function call to download facebook images
-#get_facebook_post_images(driver,"./covid19-vaccine-facebook-examples.jsonl")
+get_facebook_post_images(driver,"./covid19-vaccine-facebook-examples.jsonl")
 
 
 #instagram login
-#attempt_instagram_login("sam.park.hehe","Test@1234",driver)
+#attempt_instagram_login("username","password",driver)
 
 #instragram cookie login
-attempt_cookie_login_instagram('./instagram_cookies.txt',driver)
+#attempt_cookie_login_instagram('./instagram_cookies.txt',driver)
 
 #function call to download instagram images
-get_instagram_post_images(driver,"./covid19-vaccine-instagram-examples.jsonl")
+#get_instagram_post_images(driver,"./covid19-vaccine-instagram-examples.jsonl")
         
 
 driver.quit()
