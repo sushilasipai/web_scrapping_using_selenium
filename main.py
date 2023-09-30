@@ -13,6 +13,12 @@ import random
 other_website=['https://quora.com','https://twitter.com','https://www.reddit.com','https://www.tumblr.com']
 
 
+def visit_other_site():
+    time.sleep(random.randint(8,15))
+    driver.get(random.choice(other_website))
+    time.sleep(random.randint(8,15))
+    
+
 def download_image(url, directory, file_name):
     try:
         response = requests.get(url)
@@ -85,13 +91,7 @@ def attempt_cookie_login_facebook(url, browser):
                 # print(cookie)
                 browser.add_cookie(cookie)
 
-    # # Set Cookie and sleep 10s
-    time.sleep(random.randint(8,15))
-
-    # # Navigate to another website
-    driver.get(random.choice(other_website))
-
-    time.sleep(random.randint(8,15))
+    visit_other_site()
 
     # Browse back to facebook 
     driver.get('https://www.facebook.com')
@@ -114,16 +114,9 @@ def attempt_cookie_login_instagram(url, browser):
                 # print(cookie)
                 browser.add_cookie(cookie)
 
-    # # Set Cookie and sleep 10s
-    time.sleep(random.randint(8,15))
+    visit_other_site()
 
-    # # Navigate to another website
-
-    driver.get(random.choice(other_website))
-
-    time.sleep(random.randint(8,15))
-
-    # Browse back to facebook 
+    # Browse back to instagram 
 
     driver.get('https://www.instagram.com')
 
@@ -153,6 +146,7 @@ def get_file_name_from_imagesrc(image_src):
 
 
 def get_facebook_post_images(driver, url):
+    counter=0
     for line in read_jsonl(url):
         if(line['type'] == 'photo' or line['type'] == 'link'):
             driver.get(line['postUrl'])
@@ -167,37 +161,53 @@ def get_facebook_post_images(driver, url):
                 # # Download the file from image source
                 download_image(src, 'facebook', file_name )
 
-                # #wait 5s to navigate between posts
-                # time.sleep(5)
+
+                counter +=1
+
+                if counter == 20:
+                    visit_other_site()
+
+                    # Browse back to facebook 
+                    driver.get('https://www.facebook.com')
+                    counter=0           
                 
             except Exception as e:
                 print(f'Error: {str(e)}')
 
 def get_instagram_post_images(driver, url):
     driver.get('https://www.instagram.com')
-
+    counter=0
     for line in read_jsonl(url):
-        driver.get(line['postUrl'])
-        wait = WebDriverWait(driver, 10)  # Adjust the timeout (in seconds) as needed
-
-        
-        try:
-            # Use expected_conditions to wait for the element with class "_aagv" to appear
-            elements = wait.until(EC.presence_of_all_elements_located((By.XPATH, "//div[@class='x1i10hfl']//div[@class='_aagu']//div[@class='_aagv']")))
-
-            for element in elements:
-                img_element = element.find_element(By.TAG_NAME, "img")
-                
-                src = img_element.get_attribute("src")
+        if(line['type'] != 'video'):
+            driver.get(line['postUrl'])
+            wait = WebDriverWait(driver, 10)  # Adjust the timeout (in seconds) as needed
             
-                if src:
-                    file_name = get_file_name_from_imagesrc(src)
-                    download_image(src,'instagram',file_name)
-            
-            # download_all_post_images(img_element)
+            try:
+                # Use expected_conditions to wait for the element with class "_aagv" to appear
+                elements = wait.until(EC.presence_of_all_elements_located((By.XPATH, "//div[@class='x1i10hfl']//div[@class='_aagu']//div[@class='_aagv']")))
+
+                for element in elements:
+                    img_element = element.find_element(By.TAG_NAME, "img")
+                    
+                    src = img_element.get_attribute("src")
                 
-        except Exception as e:
-            print(f'Error: {str(e)}')
+                    if src:
+                        file_name = get_file_name_from_imagesrc(src)
+                        download_image(src,'instagram',file_name)
+
+                        counter +=1
+
+                        if counter == 20:
+                            visit_other_site()
+
+                            # Browse back to instagram 
+                            driver.get('https://www.instagram.com')
+                            counter=0
+                
+                # download_all_post_images(img_element)
+                    
+            except Exception as e:
+                print(f'Error: {str(e)}')
     
 
 
