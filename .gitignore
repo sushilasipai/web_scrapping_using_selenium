@@ -1,7 +1,9 @@
 facebook_cookies.txt
+*.jpg
 instagram_cookies.txt
-.jpg
-covid19-vaccine-facebook-examples.jsonl
-covid19-vaccine-instagram_examples.jsonl
-covid19-vaccine-instagram-ids.jsonl
-covid19-vaccine-facebook-ids.jsonl
+*.jsonl
+videos/*.mp4
+*.mp4
+instagram/*.jpg
+facebook/*.jpg
+*.pyc
