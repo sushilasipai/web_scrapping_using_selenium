@@ -79,19 +79,25 @@ def getAudioAndVideoFiles(filename):
 
     return (videoFile, audioFile)
 
-
+#need to do brew install ffmpeg for video download to work
 def combineAudioWithVideo(filename):
-    video, audio = getAudioAndVideoFiles(filename)
+    try:
+        video, audio = getAudioAndVideoFiles(filename)
 
-    fullFile = f"{filename}{OUTPUT_EXT}"
+        fullFile = f"{filename}{OUTPUT_EXT}"
 
-    subprocess.run(['ffmpeg', '-i', video, '-i', audio, '-c', 'copy', f"{fullFile}"])
-    shutil.copy2(fullFile, './videos')
-    os.remove(fullFile)
+        subprocess.run(['ffmpeg', '-i', video, '-i', audio, '-c', 'copy', f"{fullFile}"])
+        shutil.copy2(fullFile, './videos')
+        os.remove(fullFile)
 
-    cleanUp(filename)
+        cleanUp(filename)
 
-    print("Video saved to", fullFile)
+        print("Video saved to", fullFile)
+    except Exception as e:
+        print("Error during processing of video")
+        cleanUp(filename)
+        raise e
+        
 
 
 def download_file_with_retry(url, filename):
@@ -126,6 +132,7 @@ def download_file_with_retry(url, filename):
                     print(f"ChunkedEncodingError: Retrying (attempt {attempt + 1})")
                 else:
                     print(f"ChunkedEncodingError: Cannot Download")  # Raise the exception if max retries are reached
+                    raise "Encoding Error"
 
                 
 
@@ -136,7 +143,8 @@ def download_file_with_retry(url, filename):
 def downloadVideo(driver,url, filename, youtube = 0):
     url_list = get_m3u8_urls(driver, url)
     mediaFiles = []
-    
+    if(len(url_list) <= 0):
+        return "Not Found"
     for url in url_list:
         if(youtube == 1):
             mediaFiles.append(url.split("range")[0])

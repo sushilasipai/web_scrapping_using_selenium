@@ -69,3 +69,4 @@ def download_image(url, directory, file_name):
             print(f"Failed to download image from {url}. Status code: {response.status_code}")
     except Exception as e:
         print(f"Error downloading image from {url}: {str(e)}")
+        raise e

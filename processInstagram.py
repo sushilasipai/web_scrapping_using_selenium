@@ -48,16 +48,40 @@ def attempt_cookie_login_instagram(url, browser):
     time.sleep(random.randint(8,15))
 
 def perform_instagram_action(driver,data, downloader_fn, randomness_fn, line):
-    try: 
+    try:
+        error = ''
         if(data['type'] == 'video'):
-            processVideo.downloadVideo(driver,data['postUrl'], str(int(time.time())))
+            error = processVideo.downloadVideo(driver,data['postUrl'], str(int(time.time())))
         else:
             driver.get(data['postUrl'])
-            downloader_fn(driver)
+            error = downloader_fn(driver)
         randomness_fn(driver)
         time.sleep(random.randint(3,7))
+        return error
     except json.JSONDecodeError as e:
         print(f"Error processing line: {line.strip()}")
+        raise e
+        
+def get_images_from_instagram_not_loggedin(driver):
+    wait = WebDriverWait(driver, 15)  # Adjust the timeout (in seconds) as needed
+    try:
+        # Use expected_conditions to wait for the element with class "_aagv" to appear
+        elements = wait.until(EC.presence_of_all_elements_located((By.XPATH, "//div[@class='_aagu _aato']//div[@class='_aagv']")))
+        if(len(elements) <= 0):
+            return "Not Found"
+        for element in elements:
+            img_element = element.find_element(By.TAG_NAME, "img")           
+            src = img_element.get_attribute("src")
+            
+            if src:
+                file_name = helper.get_file_name_from_imagesrc(src)
+                helper.download_image(src,'instagram',file_name)
+            else:
+                return "Not Found"
+                
+    except Exception as e:
+        print(f'Error: {str(e)}')
+        raise e  
 
 def get_images_from_instagram(driver):
     wait = WebDriverWait(driver, 15)  # Adjust the timeout (in seconds) as needed
@@ -75,6 +99,7 @@ def get_images_from_instagram(driver):
                 
     except Exception as e:
         print(f'Error: {str(e)}')   
+        raise e
 
 
 

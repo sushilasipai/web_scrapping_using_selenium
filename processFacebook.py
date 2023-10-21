@@ -60,8 +60,9 @@ def attempt_cookie_login_facebook(url, browser):
     
 def perform_facebook_action(driver,data, downloader_fn, randomness_fn, line):
     try:
+        error = ''
         if(data['type'] == 'native_video' or data['type']== 'live_video_complete' ):
-            processVideo.downloadVideo(driver,data['postUrl'], str(int(time.time())))
+            error = processVideo.downloadVideo(driver,data['postUrl'], str(int(time.time())))
         elif(data['type'] == 'video' or data['type'] == 'youtube'):
             for d in data['media']:
                 if(d['type'] == 'video'):
@@ -71,12 +72,29 @@ def perform_facebook_action(driver,data, downloader_fn, randomness_fn, line):
                     processVideo.downloadVideo(driver,d['url'], str(int(time.time())), youtube)     
         else:
             driver.get(data['postUrl'])
-            downloader_fn(driver)
+            error = downloader_fn(driver)
         randomness_fn(driver)
         time.sleep(random.randint(3,7))
+        return error
     except json.JSONDecodeError as e:
         print(f"Error processing line: {line.strip()}")
+        raise e
 
+def get_images_from_facebook_not_logged_in(driver):
+    try:
+        elements = WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located((By.XPATH, "//img[contains(@class, 'scaledImageFitWidth')]")))
+      
+        src = elements[1].get_attribute("src")
+        if(src):
+            file_name = helper.get_file_name_from_imagesrc(src)
+            helper.download_image(src, 'facebook', file_name )
+        else:
+            return "Not Found"
+        
+
+    except Exception as e:
+        print(f'Error: Unable to download the image {str(e)}')
+        raise e
     
 def get_images_from_facebook(driver):
     try:
@@ -88,3 +106,4 @@ def get_images_from_facebook(driver):
 
     except Exception as e:
         print(f'Error: Unable to download the image {str(e)}')
+        raise e
