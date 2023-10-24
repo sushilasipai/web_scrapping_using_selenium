@@ -51,10 +51,10 @@ def perform_instagram_action(driver,data, downloader_fn, randomness_fn, line):
     try:
         error = ''
         if(data['type'] == 'video'):
-            error = processVideo.downloadVideo(driver,data['postUrl'], str(int(time.time())))
+            error = processVideo.downloadVideo(driver,data['postUrl'], data['platformId'])
         else:
             driver.get(data['postUrl'])
-            error = downloader_fn(driver)
+            error = downloader_fn(driver, data['platformId'])
         randomness_fn(driver)
         time.sleep(random.randint(3,7))
         return error
@@ -62,7 +62,7 @@ def perform_instagram_action(driver,data, downloader_fn, randomness_fn, line):
         print(f"Error processing line: {line.strip()}")
         raise e
         
-def get_images_from_instagram_not_loggedin(driver):
+def get_images_from_instagram_not_loggedin(driver, filename):
     wait = WebDriverWait(driver, 15)  # Adjust the timeout (in seconds) as needed
     try:
         # Use expected_conditions to wait for the element with class "_aagv" to appear
@@ -74,7 +74,7 @@ def get_images_from_instagram_not_loggedin(driver):
             src = img_element.get_attribute("src")
             
             if src:
-                file_name = helper.get_file_name_from_imagesrc(src)
+                file_name = helper.convert_to_jpg(filename)
                 helper.download_image(src,'instagram',file_name)
             else:
                 return "Not Found"
@@ -83,7 +83,7 @@ def get_images_from_instagram_not_loggedin(driver):
         print(f'Error: {str(e)}')
         raise e  
 
-def get_images_from_instagram(driver):
+def get_images_from_instagram(driver, filename):
     wait = WebDriverWait(driver, 15)  # Adjust the timeout (in seconds) as needed
     try:
         # Use expected_conditions to wait for the element with class "_aagv" to appear
@@ -94,7 +94,7 @@ def get_images_from_instagram(driver):
             src = img_element.get_attribute("src")
             
             if src:
-                file_name = helper.get_file_name_from_imagesrc(src)
+                file_name = helper.convert_to_jpg(filename)
                 helper.download_image(src,'instagram',file_name)
                 
     except Exception as e:

@@ -69,10 +69,10 @@ def perform_facebook_action(driver,data, downloader_fn, randomness_fn, line):
                     youtube = 0
                     if(data['type'] == 'youtube'):
                         youtube= 1
-                    processVideo.downloadVideo(driver,d['url'], str(int(time.time())), youtube)     
+                    processVideo.downloadVideo(driver,d['url'],data['platformId'] , youtube)     
         else:
             driver.get(data['postUrl'])
-            error = downloader_fn(driver)
+            error = downloader_fn(driver, data['platformId'])
         randomness_fn(driver)
         time.sleep(random.randint(3,7))
         return error
@@ -80,13 +80,13 @@ def perform_facebook_action(driver,data, downloader_fn, randomness_fn, line):
         print(f"Error processing line: {line.strip()}")
         raise e
 
-def get_images_from_facebook_not_logged_in(driver):
+def get_images_from_facebook_not_logged_in(driver, filename):
     try:
         elements = WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located((By.XPATH, "//img[contains(@class, 'scaledImageFitWidth')]")))
       
         src = elements[1].get_attribute("src")
         if(src):
-            file_name = helper.get_file_name_from_imagesrc(src)
+            file_name = helper.convert_to_jpg(filename)
             helper.download_image(src, 'facebook', file_name )
         else:
             return "Not Found"
@@ -96,12 +96,12 @@ def get_images_from_facebook_not_logged_in(driver):
         print(f'Error: Unable to download the image {str(e)}')
         raise e
     
-def get_images_from_facebook(driver):
+def get_images_from_facebook(driver, filename):
     try:
         elements = WebDriverWait(driver, 15).until(EC.visibility_of_element_located((By.XPATH, "//div[@class='x10l6tqk x13vifvy']")))
         img_element = elements.find_element(By.TAG_NAME, "img")
         src = img_element.get_attribute("src")
-        file_name = helper.get_file_name_from_imagesrc(src)
+        file_name = helper.convert_to_jpg(filename)
         helper.download_image(src, 'facebook', file_name )
 
     except Exception as e:
