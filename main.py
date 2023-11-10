@@ -41,10 +41,12 @@ def initiate_selenium(next_proxy, headless = 1):
     options.add_experimental_option("w3c", desired_capabilities)
     options.add_experimental_option("excludeSwitches", ["enable-automation"]) 
     options.add_experimental_option("useAutomationExtension", False) 
+    options.add_argument("--disable-features=NetworkService")
+    options.add_argument("--disable-features=PageLifecycle")
 
    
     options.add_argument("--disable-notifications")
-    options.add_argument(f'--proxy-server={next_proxy}')
+    # options.add_argument(f'--proxy-server={next_proxy}')
 
     if(headless == 1):
         options.add_argument('--headless')

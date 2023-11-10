@@ -8,6 +8,7 @@ import json
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException  # Import TimeoutException
+from selenium.webdriver.common.keys import Keys
 
 def attempt_instagram_login(user_name, user_pass, browser):
     browser.get('https://www.instagram.com')
@@ -51,8 +52,10 @@ def attempt_cookie_login_instagram(url, browser):
 def perform_instagram_action(driver,data, downloader_fn, randomness_fn, line):
     try:
         error = ''
+        driver.get(data['postUrl'])
+
         try:
-            element = WebDriverWait(driver, 15).until(EC.presence_of_element_located((By.XPATH, "//h1[contains(@class, '_aacl _aaco _aacu _aacx _aad7 _aade')]")))
+            element = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//h1[contains(@class, '_aacl _aaco _aacu _aacx _aad7 _aade')]")))
         except TimeoutException:
             element = None
             print("No Caption found")
@@ -61,11 +64,6 @@ def perform_instagram_action(driver,data, downloader_fn, randomness_fn, line):
             get_text_from_instagram(element, data['platformId'], f"./videos/{data['platformId']}.final.mp4")
 
         else:
-            driver.get(data['postUrl'])
-            try:
-                element = WebDriverWait(driver, 15).until(EC.presence_of_element_located((By.XPATH, "//h1[contains(@class, '_aacl _aaco _aacu _aacx _aad7 _aade')]")))
-            except TimeoutException:
-                element = None
             error = downloader_fn(driver, data['platformId'], element)
         randomness_fn(driver)
         time.sleep(random.randint(3,7))
@@ -84,7 +82,8 @@ def get_images_from_instagram_not_loggedin(driver, filename, caption_element):
             return "Not Found"
         files = []
         for element in elements:
-            img_element = element.find_element(By.TAG_NAME, "img")           
+            img_element = element.find_element(By.TAG_NAME, "img") 
+            driver.execute_script("arguments[0].setAttribute('loading', 'eager');", img_element)
             src = img_element.get_attribute("src")
             
             if src:
