@@ -15,4 +15,4 @@ def check_images_and_log_missing(jsonl_file_path, image_directory, video_directo
                 log_file.write('\n')
 
 
-check_images_and_log_missing('./fb-covid19-frame-rel-v1_candidates_bak.jsonl', './facebook', './facebook_videos', './failedToDownload.jsonl')
+check_images_and_log_missing('../fb-covid19-frame-rel-v1_candidates_bak.jsonl', '../facebook', '../facebook_videos', '../failedToDownload.jsonl')

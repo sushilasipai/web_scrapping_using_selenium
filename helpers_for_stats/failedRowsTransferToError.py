@@ -34,6 +34,6 @@ def move_data_between_jsonl_files(source_file_path, destination_file_path, refer
 
 
 
-move_data_between_jsonl_files('./fb-covid19-frame-rel-v1_candidates_bak.jsonl', 
-                              './fb-covid19-frame-rel-v1_candidates_error.jsonl', 
-                              './failedToDownload.jsonl')
+move_data_between_jsonl_files('../fb-covid19-frame-rel-v1_candidates_bak.jsonl', 
+                              '../fb-covid19-frame-rel-v1_candidates_error.jsonl', 
+                              '../failedToDownload.jsonl')

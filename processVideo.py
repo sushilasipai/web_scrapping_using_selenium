@@ -13,7 +13,7 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 OUTPUT_EXT = ".final.mp4"
 
 def get_m3u8_urls(driver, url): 
-   driver.get(url)
+#    driver.get(url)
    driver.execute_script("window.scrollTo(0, 10000)")
    time.sleep(20)
    logs = driver.get_log("performance")
@@ -156,4 +156,5 @@ def downloadVideo(driver,url, filename, youtube = 0):
         download_file_with_retry(mediaFiles[index],f"{filename}{index}.mp3" )
             
     combineAudioWithVideo(filename)
+
     
