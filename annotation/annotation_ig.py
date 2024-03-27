@@ -1,13 +1,14 @@
 import json
 import os
-import platform
 
 # Path to the input JSONL file
 input_jsonl = 'ig-covid19-filtered_candidates_to_match_image.jsonl'
 output_jsonl = 'annotated_ig_candidates_new.jsonl'
 
+
+
 # Directory containing the image files
-image_folder = 'instagram'
+image_folder = '../instagram'
 
 # Stance mapping
 stances = {
@@ -39,15 +40,19 @@ def open_image(image_path):
 # Function to open image with possible suffixes
 def open_image_with_suffix(image_folder, platform_id):
     suffixes = ['', '_0', '_1']
+    image_paths = []
     for suffix in suffixes:
         image_name = f"{platform_id}{suffix}.jpg"
         image_path = os.path.join(image_folder, image_name)
         if os.path.exists(image_path):
-            print(f"Opening image for platformId {platform_id}:", image_name)
-            open_image(image_path)
-            return
-    print(f"No image found for platformId: {platform_id}")
+            print(f"Found image for platformId {platform_id}:", image_name)
+            image_paths.append((image_path, suffix))
 
+    if not image_paths:
+        print(f"No images found for platformId: {platform_id}")
+        return None
+    else:
+        return image_paths
 
 # Find the last annotated platformId
 def find_last_annotated_platform_id():
@@ -77,32 +82,71 @@ def annotate_data():
                 # Skip already annotated entries
                 continue
 
-            # Display the text
+            # Find the frame number from candidates
+            frame_number = None
+            candidates = data.get('candidates', {})
+            for key, value in candidates.items():
+                if isinstance(value, dict) and 'rank' in value:
+                    frame_number = key
+                    break
+
+            if frame_number:
+                frame_data = frames.get(frame_number, {})
+                if frame_data:
+                    print("************************************************************************************")
+                    print("FRAME TEXT:", frame_data.get('text'))
+                    print("########################################################################")
+
+            # Display the post text
             print("\nText for platformId", platform_id, ": ", data.get('text', 'No text available'))
 
-            open_image_with_suffix(image_folder, platform_id)
-
-            # Get stance and reason input
+            # Get stance and reason input for text
             text_stance = get_stance_input(platform_id, "text")
             text_reason = get_reason_input(platform_id, "text")
-            image_stance = get_stance_input(platform_id, "image")
-            image_reason = get_reason_input(platform_id, "image")
-            combined_stance = get_stance_input(platform_id, "combined text and image")
-            combined_reason = get_reason_input(platform_id, "combined text and image")
 
-            # Append labels and reasons to data and write to file
-            data['labels_rakshita'] = {
+            # Initialize labels and reasons for all components
+            labels = {
                 "text": text_stance,
-                "image": image_stance,
-                "combined": combined_stance
             }
-            data['labels_reason_rakshita'] = {
+            labels_reason = {
                 "text": text_reason,
-                "image": image_reason,
-                "combined": combined_reason
             }
+
+            # Append labels and reasons to data
+            data['labels'] = labels
+            data['labels_reason'] = labels_reason
+
+            # Get stance and reason input for each image
+            image_paths_with_suffix = open_image_with_suffix(image_folder, platform_id)
+            if image_paths_with_suffix:
+                for image_path, suffix in image_paths_with_suffix:
+                    open_image(image_path)
+                    image_stance = get_stance_input(platform_id, f"image{suffix}")
+                    image_reason = get_reason_input(platform_id, f"image{suffix}")
+                    # Append labels and reasons for each image
+                    labels[f"image{suffix}"] = image_stance
+                    labels_reason[f"image{suffix}"] = image_reason
+
+            # Get stance and reason input for combined text and images
+            combined_stance = get_stance_input(platform_id, "combined text and images")
+            combined_reason = get_reason_input(platform_id, "combined text and images")
+            # Append labels and reasons for combined text and images
+            labels["combined"] = combined_stance
+            labels_reason["combined"] = combined_reason
+
+            # Update data with labels and reasons
+            data['labels'] = labels
+            data['labels_reason'] = labels_reason
+
+            print("************************************************************************************")
+
+            # Write data to file
             json.dump(data, outfile)
             outfile.write('\n')
+
+# Assuming 'frames.json' is loaded into a dictionary called 'frames'
+with open('frames.json', 'r') as frames_file:
+    frames = json.load(frames_file)
 
 # Run the annotation process
 try:
